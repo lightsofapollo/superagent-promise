@@ -13,14 +13,14 @@ var agent = require('superagent-promise');
 // method, url form
 agent('GET', 'http://google.com').
   end().
-  then(function onResult() {
+  then(function onResult(res) {
   });
 
 // helper functions: get, head, patch, post, put, del
 agent().
   put('http://myxfoo', 'data').
   end().
-  then(function() {
+  then(function(res) {
   });
 
 ```
