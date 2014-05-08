@@ -2,7 +2,7 @@
   "name": "superagent-promise",
   "repo": "lightsofapollo/superagent-promise",
   "description": "",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "keywords": [],
   "dependencies": {
     "visionmedia/superagent": "~0.18.0"
