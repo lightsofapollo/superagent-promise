@@ -5,7 +5,7 @@
 var superagent  = require('superagent');
 
 // in the browser Promise is expected to be defined.
-var Promise = this.Promise || require('promise');
+var Promise = this.Promise || require('bluebird');
 
 /**
  * Request object similar to superagent.Request, but with end() returning
