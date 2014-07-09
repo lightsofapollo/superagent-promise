@@ -19,12 +19,16 @@ function PromiseRequest() {
 PromiseRequest.prototype = Object.create(superagent.Request.prototype);
 
 /** Send request and get a promise that `end` was emitted */
-PromiseRequest.prototype.end = function() {
+PromiseRequest.prototype.end = function(cb) {
   var _super = superagent.Request.prototype.end;
   var context = this;
 
   return new Promise(function(accept, reject) {
     _super.call(context, function(err, value) {
+      if (cb) {
+        cb(err, value);
+      }
+
       if (err) {
         return reject(err);
       }
