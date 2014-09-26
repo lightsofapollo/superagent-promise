@@ -2,7 +2,7 @@ superagent-promise
 ==================
 
 Simple/dumb promise wrapper for superagent. Both `superagent` and
-`promise` are peerDependencies.
+`bluebird` are peerDependencies.
 
 
 ## Usage

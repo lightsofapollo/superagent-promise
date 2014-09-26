@@ -24,13 +24,6 @@ suite('superagent-promise', function() {
           'Content-Type': 'text/plain'
         });
         res.end(errorBody);
-      } else if(/error$/.test(req.url)) {
-        debug("Responding with 200, but mismatching Content-Length");
-        res.writeHead(404, {
-          'Content-Length': successBody.length - 2,
-          'Content-Type': 'text/plain'
-        });
-        res.end(successBody);
       }
     });
 
@@ -71,7 +64,10 @@ suite('superagent-promise', function() {
 
   test('test error', function(done) {
     var addr = server.address();
-    var url = 'http://' + addr.address + ':' + addr.port + "/error";
+    var url = 'http://' + addr.address + ':' + (addr.port + 1);
+
+    // superagent doesn't throw errors for 4xx/5xx status
+    // codes so we use wrong port number to trigger error
 
     request('GET', url).end().then(function(res) {
       assert.ok(false);
