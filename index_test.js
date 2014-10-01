@@ -31,6 +31,14 @@ suite('superagent-promise', function() {
           'Content-Type': 'text/plain'
         });
         res.end(successBody);
+      } else if (/redirect/.test(req.url)) {
+        debug("Responding with a 302 redirect");
+        var addr = server.address();
+        var url = 'http://' + addr.address + ':' + addr.port + "/success";
+        res.writeHead(303, {
+          'Location': url
+        });
+        res.end();
       }
     });
 
@@ -79,6 +87,15 @@ suite('superagent-promise', function() {
     }, function(err) {
       assert.ok(err);
       done();
+    });
+  });
+
+  test('issue request w. redirect', function() {
+    var addr = server.address();
+    var url = 'http://' + addr.address + ':' + addr.port + "/redirect";
+
+    return request('GET', url).end().then(function(res) {
+      assert.equal(res.text, successBody);
     });
   });
 });
