@@ -75,16 +75,16 @@ describe('superagent-promise', function() {
     ].forEach(function(method) {
       describe('#'+method, function() {
         it('should have `then` and `end`', function() {
-          assert(request[method]().then instanceof Function);
-          assert(request[method]().end instanceof Function);
+          assert(request[method](baseURL).then instanceof Function);
+          assert(request[method](baseURL).end instanceof Function);
         });
 
         it('`end` should return a promise', function() {
-          assert(request[method]().end() instanceof Promise);
+          assert(request[method](baseURL).end() instanceof Promise);
         });
 
         it('`then` should return a promise', function() {
-          assert(request[method]().then() instanceof Promise);
+          assert(request[method](baseURL).then() instanceof Promise);
         });
       })
     });
