@@ -1,6 +1,22 @@
+<<<<<<< Updated upstream
 ---
   language: node_js
   node_js:
     - "node"
     - "0.10"
     - "iojs"
+=======
+language: node_js
+node_js:
+- node
+- '0.12'
+- '0.10'
+- iojs
+deploy:
+  provider: npm
+  email: clayreimann@gmail.com
+  api_key:
+    secure: BSWVUNRFj683xLpAeE7LGPT/nTN+5xu8DEfuhPBvwqsItmOG1iAF5XPNMsn8g0gfnMNcR7iuZnbHgRWMyTc1eGhIuCS5fdgsRBozjjeZ7k78MhgSH2odwIe6f9dHOtyTiKREvYDJ3AdIvL2xrH5bjZsxjzxIys6p8iuxFUqDqvk=
+  on:
+    tags: true
+>>>>>>> Stashed changes
