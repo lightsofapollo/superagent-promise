@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/lightsofapollo/superagent-promise.svg?branch=master)](https://travis-ci.org/lightsofapollo/superagent-promise)
+
 superagent-promise
 ==================
 
