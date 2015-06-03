@@ -2,10 +2,7 @@
  * Promise wrapper for superagent
  */
 
-// in the browser Promise is expected to be defined.
-var Promise = this.Promise || require('promise');
-
-function wrap(superagent) {
+function wrap(superagent, Promise) {
   /**
    * Request object similar to superagent.Request, but with end() returning
    * a promise.
@@ -19,21 +16,38 @@ function wrap(superagent) {
 
   /** Send request and get a promise that `end` was emitted */
   PromiseRequest.prototype.end = function(cb) {
-    var _super = superagent.Request.prototype.end;
-    var context = this;
+    var _end = superagent.Request.prototype.end;
+    var self = this;
 
     return new Promise(function(accept, reject) {
-      _super.call(context, function(err, value) {
+      _end.call(self, function(err, value) {
         if (cb) {
           cb(err, value);
         }
 
         if (err) {
-          return reject(err);
+          reject(err);
+        } else {
+          accept(value);
         }
-        accept(value);
       });
     });
+  };
+
+  /** Provide a more promise-y interface */
+  PromiseRequest.prototype.then = function(resolve, reject) {
+    var _end = superagent.Request.prototype.end;
+    var self = this;
+
+    return new Promise(function(accept, reject) {
+      _end.call(self, function(err, value) {
+        if (err) {
+          reject(err);
+        } else {
+          accept(value);
+        }
+      });
+    }).then(resolve, reject);
   };
 
   /**
@@ -43,8 +57,6 @@ function wrap(superagent) {
   var request = function(method, url) {
     return new PromiseRequest(method, url);
   };
-
-  request.wrap = wrap;
 
   /** Helper for making a get request */
   request.get = function(url, data) {
@@ -100,4 +112,4 @@ function wrap(superagent) {
   return request;
 }
 
-module.exports = wrap(require('superagent'));
+module.exports = wrap;
