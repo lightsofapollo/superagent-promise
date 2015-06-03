@@ -20,15 +20,15 @@ function wrap(superagent, Promise) {
     var self = this;
 
     return new Promise(function(accept, reject) {
-      _end.call(self, function(err, value) {
+      _end.call(self, function(err, response) {
         if (cb) {
-          cb(err, value);
+          cb(err, response);
         }
 
         if (err) {
           reject(err);
         } else {
-          accept(value);
+          accept(response);
         }
       });
     });
@@ -40,11 +40,11 @@ function wrap(superagent, Promise) {
     var self = this;
 
     return new Promise(function(accept, reject) {
-      _end.call(self, function(err, value) {
+      _end.call(self, function(err, response) {
         if (err) {
           reject(err);
         } else {
-          accept(value);
+          accept(response);
         }
       });
     }).then(resolve, reject);
@@ -58,14 +58,10 @@ function wrap(superagent, Promise) {
     return new PromiseRequest(method, url);
   };
 
-  /** Helper for making a get request */
-  request.get = function(url, data) {
-    var req = request('GET', url);
-    if (data) {
-      req.query(data);
-    }
-    return req;
-  };
+  /** Helper for making an options request */
+  request.options = function(url) {
+    return request('OPTIONS', url);
+  }
 
   /** Helper for making a head request */
   request.head = function(url, data) {
@@ -76,16 +72,11 @@ function wrap(superagent, Promise) {
     return req;
   };
 
-  /** Helper for making a delete request */
-  request.del = function(url) {
-    return request('DELETE', url);
-  };
-
-  /** Helper for making a patch request */
-  request.patch = function(url, data) {
-    var req = request('PATCH', url);
+  /** Helper for making a get request */
+  request.get = function(url, data) {
+    var req = request('GET', url);
     if (data) {
-      req.send(data);
+      req.query(data);
     }
     return req;
   };
@@ -106,6 +97,20 @@ function wrap(superagent, Promise) {
       req.send(data);
     }
     return req;
+  };
+
+  /** Helper for making a patch request */
+  request.patch = function(url, data) {
+    var req = request('PATCH', url);
+    if (data) {
+      req.send(data);
+    }
+    return req;
+  };
+
+  /** Helper for making a delete request */
+  request.del = function(url) {
+    return request('DELETE', url);
   };
 
   // Export the request builder

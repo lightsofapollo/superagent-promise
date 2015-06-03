@@ -1,29 +1,35 @@
-suite('superagent-promise', function() {
-  var assert  = require('assert');
-  var request = require('./')(require('superagent'), require('es6-promise').Promise);
-  var http    = require('http');
-  var debug   = require('debug')('index_test');
+var assert  = require('assert');
+var Promise = require('es6-promise').Promise
+var request = require('./')(require('superagent'), Promise);
+var http    = require('http');
+var debug   = require('debug')('test:index');
 
+function respondWith(res, status, body) {
+  res.writeHead(status, {
+    'Content-Type': 'text/plain',
+    'Content-Length': body.length
+  });
+  res.end(body);
+}
+
+describe('superagent-promise', function() {
   // start the server
   var server;
+  var baseURL;
   var successBody = 'woot';
   var errorBody = 'Not Found';
-  setup(function(done) {
+
+  before(function(done) {
     server = http.createServer(function(req, res) {
       if (/success$/.test(req.url)) {
         debug('Responding with 200');
-        res.writeHead(200, {
-          'Content-Length': successBody.length,
-          'Content-Type': 'text/plain'
-        });
-        res.end(successBody);
+        respondWith(res, 200, successBody);
+        return;
+
       } else if(/NotFound$/.test(req.url)) {
         debug('Responding with 404');
-        res.writeHead(404, {
-          'Content-Length': errorBody.length,
-          'Content-Type': 'text/plain'
-        });
-        res.end(errorBody);
+        respondWith(res, 404, errorBody);
+
       } else if(/error$/.test(req.url)) {
         debug('Responding with 200, but mismatching Content-Length');
         res.writeHead(200, {
@@ -31,45 +37,70 @@ suite('superagent-promise', function() {
           'Content-Type': 'text/plain'
         });
         res.end(successBody);
-      }
+      } else if (/redirect/.test(req.url)) {
+        debug('Responding with a 302 redirect');
+        var url = baseURL + '/success';
+        res.writeHead(303, {
+          'Location': url
+        });
+        res.end();
+       }
     });
 
     server.listen(0, function() {
-      debug('listen');
+      var addr = server.address();
+      debug('server up at', addr);
+      baseURL = 'http://' + addr.address + ':' + addr.port;
       done();
     });
   });
 
-  teardown(function(done) {
+  after(function(done) {
     server.close(function() {
-      debug('teardown');
+      debug('server down');
       done();
     });
     server = undefined;
   });
 
-  suite('#end', function() {
-    test('issue request', function(done) {
-      var addr = server.address();
-      var url = 'http://' + addr.address + ':' + addr.port + '/success';
+  describe('convenience methods', function() {
+    [
+      'head',
+      'options',
+      'get',
+      'post',
+      'put',
+      'patch',
+      'del'
+    ].forEach(function(method) {
+      describe('#'+method, function() {
+        it('should have `then` and `end`', function() {
+          assert(request[method]().then instanceof Function);
+          assert(request[method]().end instanceof Function);
+        });
+
+        it('`end` should return a promise', function() {
+          assert(request[method]().end() instanceof Promise);
+        });
+
+        it('`then` should return a promise', function() {
+          assert(request[method]().then() instanceof Promise);
+        });
+      })
+    });
+  })
+
+  describe('#end', function() {
+    it('should succeed on 200', function(done) {
+      var url = baseURL + '/success';
 
       request('GET', url).end().then(function(res) {
         assert.equal(res.text, successBody);
       }).then(done).catch(done);
     });
 
-    test('issue request with .get', function(done) {
-      var addr = server.address();
-      var url = 'http://' + addr.address + ':' + addr.port + '/success';
-
-      request.get(url).end().then(function(res) {
-        assert.equal(res.text, successBody);
-      }).then(done).catch(done);
-    });
-
-    test('issue 404 request', function(done) {
-      var addr = server.address();
-      var url = 'http://' + addr.address + ':' + addr.port + '/NotFound';
+    it('should fail on 404', function(done) {
+      var url = baseURL + '/NotFound';
 
       request('GET', url).end().then(undefined, function(err) {
         assert.equal(err.status, 404)
@@ -78,41 +109,38 @@ suite('superagent-promise', function() {
       }).then(done).catch(done);
     });
 
-    test('test error', function(done) {
-      var addr = server.address();
-      var url = 'http://' + addr.address + ':' + addr.port + '/error';
+    it('should fail if content length is mismatched', function(done) {
+      var url = baseURL + '/error';
 
       request('GET', url).end().then(function(res) {
-        done(new Error('error should not should not succeed'));
+        done(new Error('Got response for mismatched Content-Length'))
 
       }, function(err) {
         assert.ok(err);
-      }).then(done).catch(done);
+        done();
+      });
+    });
+
+    it('should follow redirects', function() {
+      var url = baseURL + '/redirect';
+
+      return request('GET', url).end().then(function(res) {
+        assert.equal(res.text, successBody);
+      });
     });
   });
 
-  suite('#then', function() {
-    test('issue request', function(done) {
-      var addr = server.address();
-      var url = 'http://' + addr.address + ':' + addr.port + '/success';
+  describe('#then', function() {
+    it('should succeed on 200', function(done) {
+      var url = baseURL + '/success';
 
       request('GET', url).then(function(res) {
         assert.equal(res.text, successBody);
       }).then(done).catch(done);
     });
 
-    test('issue request with .get', function(done) {
-      var addr = server.address();
-      var url = 'http://' + addr.address + ':' + addr.port + '/success';
-
-      request.get(url).then(function(res) {
-        assert.equal(res.text, successBody);
-      }).then(done).catch(done);
-    });
-
-    test('issue 404 request', function(done) {
-      var addr = server.address();
-      var url = 'http://' + addr.address + ':' + addr.port + '/NotFound';
+    it('issue 404 request', function(done) {
+      var url = baseURL + '/NotFound';
 
       request('GET', url).then(undefined, function(err) {
         assert.equal(err.status, 404)
@@ -121,16 +149,25 @@ suite('superagent-promise', function() {
       }).then(done).catch(done);
     });
 
-    test('test error', function(done) {
-      var addr = server.address();
-      var url = 'http://' + addr.address + ':' + addr.port + '/error';
+    it('test error', function(done) {
+      var url = baseURL + '/error';
 
       request('GET', url).then(function(res) {
         done(new Error('error should not should not succeed'));
 
       }, function(err) {
         assert.ok(err);
-      }).then(done).catch(done);
+        done();
+      });
     });
-  })
+
+    it('issue request w. redirect', function() {
+      var url = baseURL + '/redirect';
+
+      return request('GET', url).then(function(res) {
+        assert.equal(res.text, successBody);
+      });
+    });
+
+  });
 });
