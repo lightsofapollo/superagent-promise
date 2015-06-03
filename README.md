@@ -1,8 +1,7 @@
 superagent-promise
 ==================
 
-Simple/dumb promise wrapper for superagent. Both `superagent` and
-`promise` are peerDependencies.
+Simple/dumb promise wrapper for superagent. You must depend on `superagent` and your favorite Promise library directly.
 
 
 ## Usage
