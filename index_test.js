@@ -19,6 +19,7 @@ describe('superagent-promise', function() {
   var successBody = 'woot';
   var errorBody = 'Not Found';
 
+  var connections = {};
   before(function(done) {
     server = http.createServer(function(req, res) {
       if (/success$/.test(req.url)) {
@@ -47,6 +48,17 @@ describe('superagent-promise', function() {
        }
     });
 
+    var i = 0;
+    // for some reason the checks on convenience methods open connections
+    // that don't get closed so we have to do some clean up
+    server.on('connection', function(conn) {
+      conn.__connCount = i;
+      connections[i++] = conn;
+      conn.on('close', function() {
+        delete connections[conn.__connCount];
+      })
+    });
+
     server.listen(0, function() {
       var addr = server.address();
       debug('server up at', addr);
@@ -56,6 +68,9 @@ describe('superagent-promise', function() {
   });
 
   after(function(done) {
+    for (var conn in connections) {
+      connections[conn].destroy();
+    }
     server.close(function() {
       debug('server down');
       done();
@@ -75,16 +90,19 @@ describe('superagent-promise', function() {
     ].forEach(function(method) {
       describe('#'+method, function() {
         it('should have `then` and `end`', function() {
-          assert(request[method](baseURL).then instanceof Function);
-          assert(request[method](baseURL).end instanceof Function);
+          var promiseRequest = request[method](baseURL);
+          assert(promiseRequest.then instanceof Function);
+          assert(promiseRequest.end instanceof Function);
         });
 
         it('`end` should return a promise', function() {
-          assert(request[method](baseURL).end() instanceof Promise);
+          var p = request[method](baseURL).end();
+          assert(p instanceof Promise);
         });
 
         it('`then` should return a promise', function() {
-          assert(request[method](baseURL).then() instanceof Promise);
+          var p = request[method](baseURL).then(function() { });
+          assert(p instanceof Promise);
         });
       })
     });
