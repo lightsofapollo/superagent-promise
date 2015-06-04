@@ -10,7 +10,7 @@ Simple/dumb promise wrapper for superagent. You must depend on `superagent` and 
 
 ```js
 var Promise = this.Promise || require('promise');
-var agent = require('superagent-promise')(require('superagent'));
+var agent = require('superagent-promise')(require('superagent'), Promise);
 
 // method, url form with `end`
 agent('GET', 'http://google.com')
