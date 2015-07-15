@@ -1,8 +1,8 @@
 // ./superagent-mock-config.js file
 module.exports = function(hostname, successBody) {
-  [
+  return [
     {
-      pattern: 'http://' + hostname + '/(\\w+)/',
+      pattern: 'http://' + hostname + '/(\\w+)/?',
 
       /**
        * returns the data

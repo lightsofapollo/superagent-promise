@@ -1,3 +1,5 @@
+Object.keys(require.cache).forEach(function(key) { delete require.cache[key]; });
+
 var assert  = require('assert');
 var Promise = require('es6-promise').Promise
 var request = require('../index')(require('superagent'), Promise);
