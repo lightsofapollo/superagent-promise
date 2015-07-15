@@ -1,6 +1,6 @@
 var assert  = require('assert');
 var Promise = require('es6-promise').Promise
-var request = require('./')(require('superagent'), Promise);
+var request = require('../index')(require('superagent'), Promise);
 var http    = require('http');
 var debug   = require('debug')('test:index');
 
@@ -95,99 +95,57 @@ describe('superagent-promise', function() {
           assert(promiseRequest.end instanceof Function);
         });
 
-        it('`end` should return a promise', function() {
+        it('should return a promise from `end`', function() {
           var p = request[method](baseURL).end();
           assert(p instanceof Promise);
         });
 
-        it('`then` should return a promise', function() {
+        it('should return a promise from `then`', function() {
           var p = request[method](baseURL).then(function() { });
           assert(p instanceof Promise);
         });
       })
     });
+  });
+
+  ['end', 'then'].forEach(function(method) {
+    describe('#'+method, function() {
+      it('should succeed when the server responds with a 200', function(done) {
+        var url = baseURL + '/success';
+
+        request('GET', url)[method]().then(function(res) {
+          assert.equal(res.text, successBody);
+        }).then(done).catch(done);
+      });
+
+      it('should fail when the server responds with a 404', function(done) {
+        var url = baseURL + '/NotFound';
+
+        request('GET', url)[method]().then(undefined, function(err) {
+          assert.equal(err.status, 404)
+          assert.equal(err.response.text, errorBody);
+
+        }).then(done).catch(done);
+      });
+
+      it('should fail if content length is mismatched', function(done) {
+        var url = baseURL + '/error';
+
+        request('GET', url).end().then(function(res) {
+          done(new Error('Got response for mismatched Content-Length'))
+        }, function(err) {
+          assert.ok(err);
+          done();
+        });
+      });
+
+      it('should follow redirects', function() {
+        var url = baseURL + '/redirect';
+
+        return request('GET', url).end().then(function(res) {
+          assert.equal(res.text, successBody);
+        });
+      });
+    })
   })
-
-  describe('#end', function() {
-    it('should succeed on 200', function(done) {
-      var url = baseURL + '/success';
-
-      request('GET', url).end().then(function(res) {
-        assert.equal(res.text, successBody);
-      }).then(done).catch(done);
-    });
-
-    it('should fail on 404', function(done) {
-      var url = baseURL + '/NotFound';
-
-      request('GET', url).end().then(undefined, function(err) {
-        assert.equal(err.status, 404)
-        assert.equal(err.response.text, errorBody);
-
-      }).then(done).catch(done);
-    });
-
-    it('should fail if content length is mismatched', function(done) {
-      var url = baseURL + '/error';
-
-      request('GET', url).end().then(function(res) {
-        done(new Error('Got response for mismatched Content-Length'))
-
-      }, function(err) {
-        assert.ok(err);
-        assert.ok('response' in err);
-        done();
-      });
-    });
-
-    it('should follow redirects', function() {
-      var url = baseURL + '/redirect';
-
-      return request('GET', url).end().then(function(res) {
-        assert.equal(res.text, successBody);
-      });
-    });
-  });
-
-  describe('#then', function() {
-    it('should succeed on 200', function(done) {
-      var url = baseURL + '/success';
-
-      request('GET', url).then(function(res) {
-        assert.equal(res.text, successBody);
-      }).then(done).catch(done);
-    });
-
-    it('issue 404 request', function(done) {
-      var url = baseURL + '/NotFound';
-
-      request('GET', url).then(undefined, function(err) {
-        assert.equal(err.status, 404)
-        assert.equal(err.response.text, errorBody);
-
-      }).then(done).catch(done);
-    });
-
-    it('test error', function(done) {
-      var url = baseURL + '/error';
-
-      request('GET', url).then(function(res) {
-        done(new Error('error should not should not succeed'));
-
-      }, function(err) {
-        assert.ok(err);
-        assert.ok('response' in err);
-        done();
-      });
-    });
-
-    it('issue request w. redirect', function() {
-      var url = baseURL + '/redirect';
-
-      return request('GET', url).then(function(res) {
-        assert.equal(res.text, successBody);
-      });
-    });
-
-  });
 });
