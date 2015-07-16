@@ -1,6 +1,6 @@
 {
   "name": "superagent-promise",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "superagent promise wrapper",
   "main": "index.js",
   "scripts": {
