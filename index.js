@@ -26,6 +26,7 @@ function wrap(superagent, Promise) {
         }
 
         if (err) {
+          err.response = response;
           reject(err);
         } else {
           accept(response);
@@ -42,6 +43,7 @@ function wrap(superagent, Promise) {
     return new Promise(function(accept, reject) {
       _end.call(self, function(err, response) {
         if (err) {
+          err.response = response;
           reject(err);
         } else {
           accept(response);
