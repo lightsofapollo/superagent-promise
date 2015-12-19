@@ -135,6 +135,7 @@ describe('superagent-promise', function() {
 
       }, function(err) {
         assert.ok(err);
+        assert.ok('response' in err);
         done();
       });
     });
@@ -175,6 +176,7 @@ describe('superagent-promise', function() {
 
       }, function(err) {
         assert.ok(err);
+        assert.ok('response' in err);
         done();
       });
     });
