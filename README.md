@@ -17,6 +17,8 @@ agent('GET', 'http://google.com')
   .end()
   .then(function onResult(res) {
     // do stuff
+  }, function onError(err) {
+    //err.response has the response from the server
   });
 
 // method, url form with `then`
