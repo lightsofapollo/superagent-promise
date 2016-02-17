@@ -40,6 +40,17 @@ agent.put('http://myxfoo', 'data').
   .then(function(res) {
     // do stuff
   });
+```
 
+## Mocking
 
+Now superagent-promise can be mocked using `superagent-mock`. For the complete example see
+`test/mock.spec.js` and `test/mock.config.js`.
+
+```js
+var SUCCESS_BODY = 'Yay! Mocked :)';
+var mockedRequest = require('superagent');
+var mocks = require('./mock.config')('localhost', SUCCESS_BODY);
+require('superagent-mock')(mockedRequest, mocks);
+var request = require('../index')(mockedRequest, Promise);
 ```
