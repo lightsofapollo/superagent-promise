@@ -1,8 +1,10 @@
 Object.keys(require.cache).forEach(function(key) { delete require.cache[key]; });
 
 var assert  = require('assert');
-var Promise = require('es6-promise').Promise
-var request = require('../index')(require('superagent'), Promise);
+var superagent = require('superagent');
+var Promise = require('es6-promise').Promise;
+var wrapRequest = require('../index');
+var request = wrapRequest(superagent, Promise);
 var http    = require('http');
 var debug   = require('debug')('test:index');
 
@@ -107,6 +109,18 @@ describe('superagent-promise', function() {
           assert(p instanceof Promise);
         });
       })
+    });
+  });
+
+  describe('inherited methods', function() {
+    it('should have an agent method', function() {
+      assert.equal(typeof request.agent, 'function')
+    });
+    it('should inherit new properties added to superagent', function() {
+      superagent.foo = 'bar';
+      var r = wrapRequest(superagent, Promise)
+      assert.equal(r.foo, 'bar')
+      delete superagent.foo
     });
   });
 

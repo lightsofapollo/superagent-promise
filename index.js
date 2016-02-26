@@ -60,6 +60,15 @@ function wrap(superagent, Promise) {
     return new PromiseRequest(method, url);
   };
 
+  /**
+   * Inherit methods and properties from superagent so we can use request the same way as superagent
+   */
+  for (var method in superagent) {
+    if (superagent.hasOwnProperty(method)) {
+      request[method] = superagent[method];
+    }
+  }
+
   /** Helper for making an options request */
   request.options = function(url) {
     return request('OPTIONS', url);
