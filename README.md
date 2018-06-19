@@ -54,3 +54,40 @@ var mocks = require('./mock.config')('localhost', SUCCESS_BODY);
 require('superagent-mock')(mockedRequest, mocks);
 var request = require('../index')(mockedRequest, Promise);
 ```
+
+## Typescript
+
+This module provides a type definition file so it can be used from Typescript.
+You do **not** need to use `typings` to install, since it is included in the
+NPM package itself. However, it does depend on the `node` typings, and you
+will need the `superagent` typings in order to import superagent.
+
+```
+# install superagent and superagent-promise
+npm install superagent superagent-promise --save
+
+# install typings for node and superagent.
+typings install node --source=dt --global --save
+typings install superagent --source=dt --global --save
+```
+
+```typescript
+/// <reference path="./typings/index.d.ts" />
+
+import * as superagent from 'superagent';
+import * as superagentPromise from 'superagent-promise';
+
+const request = superagentPromise(superagent, Promise);
+
+request
+  .get('http://github.com')
+  .set('X-Awesome', 'superagent-promise')
+  .end()
+  .then(r => {
+    // r is of type SuperAgentResponse
+    console.log(`Status: ${r.status}`);
+  })
+  .catch(err => {
+    console.error(err);
+  });
+```
